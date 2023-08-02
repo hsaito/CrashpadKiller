@@ -1,0 +1,5 @@
+﻿<config>
+    <processes>
+        <process>crashpad_handler</process>
+    </processes>
+</config>

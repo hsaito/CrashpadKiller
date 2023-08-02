@@ -1,7 +1,9 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Xml;
+using System.Xml.Linq;
 using NLog;
-
 
 var intervalOption = new Option<int>(
     name: "--interval",
@@ -23,6 +25,8 @@ oneshotCommand.SetHandler(Execute);
 rootCommand.Add(oneshotCommand);
 rootCommand.Add(daemonCommand);
 
+Config.Targets = ListTargets();
+
 return await rootCommand.InvokeAsync(args);
 
 void ProcessLoop(int delay)
@@ -37,21 +41,40 @@ void ProcessLoop(int delay)
     }
 }
 
+List<string> ListTargets()
+{
+    var configFile = new StreamReader("process.xml");
+    var config = XDocument.Parse(configFile.ReadToEnd());
+    var processTree = config.Element("config").Element("processes");
+    var targetProcesses = processTree.Elements("process");
+
+    return targetProcesses.Select(target => target.Value).ToList();
+}
+
 void Execute()
 {
     var logger = LogManager.GetCurrentClassLogger();
 
     logger.Info("Killing those pesky crashpads.");
+    logger.Info("Targets are:");
+    foreach (var targetItem in Config.Targets)
+    {
+        logger.Info(targetItem);
+    }
 
     var processes = Process.GetProcesses();
+    var executionTarget = processes.Where(process => Config.Targets.Contains(process.ProcessName)).ToList();
 
-    var targets = processes.Where(q => q.ProcessName == "crashpad_handler");
-
-    foreach (var item in targets)
+    foreach (var item in executionTarget)
     {
         logger.Debug($"Attempting to kill {item.Id}");
         item.Kill(false);
     }
 
     logger.Info("Process complete.");
+}
+
+internal static class Config
+{
+    internal static List<string> Targets { get; set; }
 }
