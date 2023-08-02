@@ -48,6 +48,7 @@ List<string> ListTargets()
     var processTree = config.Element("config").Element("processes");
     var targetProcesses = processTree.Elements("process");
 
+    configFile.Close();
     return targetProcesses.Select(target => target.Value).ToList();
 }
 
