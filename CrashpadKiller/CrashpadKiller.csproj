@@ -14,12 +14,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="nlog.config">
+      <None Remove="nlog.config" />
+      <Content Include="nlog.config">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="process.xml">
+      </Content>
+      <None Remove="process.xml" />
+      <Content Include="process.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+      </Content>
     </ItemGroup>
 
 </Project>

@@ -72,6 +72,7 @@ void Execute()
     }
 
     logger.Info("Process complete.");
+    LogManager.Shutdown();
 }
 
 internal static class Config
