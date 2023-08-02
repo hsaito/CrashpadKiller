@@ -41,15 +41,19 @@ void ProcessLoop(int delay)
     }
 }
 
-List<string> ListTargets()
+List<string>? ListTargets()
 {
     var configFile = new StreamReader("process.xml");
     var config = XDocument.Parse(configFile.ReadToEnd());
-    var processTree = config.Element("config").Element("processes");
-    var targetProcesses = processTree.Elements("process");
+    var processTree = config.Element("config")?.Element("processes");
+    var targetProcesses = processTree?.Elements("process");
 
     configFile.Close();
-    return targetProcesses.Select(target => target.Value).ToList();
+    if (targetProcesses != null) return targetProcesses.Select(target => target.Value).ToList();
+    else
+    {
+        throw new InvalidProcessConfigurationFileException();
+    }
 }
 
 void Execute()
@@ -58,18 +62,21 @@ void Execute()
 
     logger.Info("Killing those pesky crashpads.");
     logger.Info("Targets are:");
-    foreach (var targetItem in Config.Targets)
+    if (Config.Targets != null)
     {
-        logger.Info(targetItem);
-    }
+        foreach (var targetItem in Config.Targets)
+        {
+            logger.Info(targetItem);
+        }
 
-    var processes = Process.GetProcesses();
-    var executionTarget = processes.Where(process => Config.Targets.Contains(process.ProcessName)).ToList();
+        var processes = Process.GetProcesses();
+        var executionTarget = processes.Where(process => Config.Targets.Contains(process.ProcessName)).ToList();
 
-    foreach (var item in executionTarget)
-    {
-        logger.Debug($"Attempting to kill {item.Id}");
-        item.Kill(false);
+        foreach (var item in executionTarget)
+        {
+            logger.Debug($"Attempting to kill {item.Id}");
+            item.Kill(false);
+        }
     }
 
     logger.Info("Process complete.");
@@ -78,5 +85,12 @@ void Execute()
 
 internal static class Config
 {
-    internal static List<string> Targets { get; set; }
+    internal static List<string>? Targets { get; set; }
+}
+
+public class InvalidProcessConfigurationFileException : Exception
+{
+    public InvalidProcessConfigurationFileException()
+    {
+    }
 }
