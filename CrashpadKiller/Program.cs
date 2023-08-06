@@ -31,13 +31,11 @@ return await rootCommand.InvokeAsync(args);
 
 void ProcessLoop(int delay)
 {
-    if (delay > 0)
+    if (delay <= 0) return;
+    while (true)
     {
-        while (true)
-        {
-            Execute();
-            Thread.Sleep(delay * 1000);
-        }
+        Execute();
+        Thread.Sleep(delay * 1000);
     }
 }
 
