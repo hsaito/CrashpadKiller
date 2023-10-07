@@ -6,6 +6,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>a584447c-8248-40e5-bafb-63929f76ba0b</UserSecretsId>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <AssemblyVersion>1.0.1.0</AssemblyVersion>
+        <FileVersion>1.0.1.0</FileVersion>
+        <Version>1.0.1.0</Version>
+        <AssemblyTitle>CrashpadKiller</AssemblyTitle>
+        <ApplicationVersion>1.0.1.0</ApplicationVersion>
+        <ProductName>CrashpadKiller</ProductName>
+        <PublisherName>Hideki Saito</PublisherName>
+        <Authors>Hideki Saito</Authors>
     </PropertyGroup>
 
     <ItemGroup>
