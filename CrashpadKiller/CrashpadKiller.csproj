@@ -2,25 +2,25 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>a584447c-8248-40e5-bafb-63929f76ba0b</UserSecretsId>
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <AssemblyVersion>1.0.2.0</AssemblyVersion>
-        <FileVersion>1.0.2.0</FileVersion>
-        <Version>1.0.2.0</Version>
+        <AssemblyVersion>1.0.3.0</AssemblyVersion>
+        <FileVersion>1.0.3.0</FileVersion>
+        <Version>1.0.3.0</Version>
         <AssemblyTitle>CrashpadKiller</AssemblyTitle>
-        <ApplicationVersion>1.0.2.0</ApplicationVersion>
+        <ApplicationVersion>1.0.3.0</ApplicationVersion>
         <ProductName>CrashpadKiller</ProductName>
         <PublisherName>Hideki Saito</PublisherName>
         <Authors>Hideki Saito</Authors>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="NLog" Version="5.2.5" />
+      <PackageReference Include="NLog" Version="5.3.4" />
       <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     </ItemGroup>
 
