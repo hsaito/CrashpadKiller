@@ -1,7 +1,5 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Xml;
 using System.Xml.Linq;
 using NLog;
 
@@ -18,39 +16,42 @@ var oneshotCommand = new Command("oneshot", "Run in an oneshot mode.");
 var daemonCommand = new Command("daemon", "Run in a daemon mode.");
 
 daemonCommand.AddOption(intervalOption);
-daemonCommand.SetHandler(ProcessLoop, intervalOption);
+daemonCommand.SetHandler((int interval) => ProcessLoop(interval), intervalOption);
 
 oneshotCommand.SetHandler(Execute);
 
 rootCommand.Add(oneshotCommand);
 rootCommand.Add(daemonCommand);
 
-Config.Targets = ListTargets();
+Config.Targets = LoadTargetsFromConfig();
 
 return await rootCommand.InvokeAsync(args);
 
-void ProcessLoop(int delay)
+void ProcessLoop(int intervalSeconds)
 {
-    if (delay <= 0) return;
+    if (intervalSeconds <= 0) return;
     while (true)
     {
         Execute();
-        Thread.Sleep(delay * 1000);
+        Thread.Sleep(intervalSeconds * 1000);
     }
 }
 
-List<string>? ListTargets()
+List<string> LoadTargetsFromConfig()
 {
-    var configFile = new StreamReader("process.xml");
-    var config = XDocument.Parse(configFile.ReadToEnd());
-    var processTree = config.Element("config")?.Element("processes");
-    var targetProcesses = processTree?.Elements("process");
-
-    configFile.Close();
-    if (targetProcesses != null) return targetProcesses.Select(target => target.Value).ToList();
-    else
+    try
     {
-        throw new InvalidProcessConfigurationFileException();
+        using var configFile = new StreamReader("process.xml");
+        var config = XDocument.Parse(configFile.ReadToEnd());
+        var processTree = config.Element("config")?.Element("processes");
+        var targetProcesses = processTree?.Elements("process");
+        if (targetProcesses != null)
+            return targetProcesses.Select(target => target.Value).ToList();
+        throw new InvalidProcessConfigurationFileException("No process targets found in configuration.");
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidProcessConfigurationFileException("Failed to load process configuration.", ex);
     }
 }
 
@@ -60,21 +61,32 @@ void Execute()
 
     logger.Info("Killing those pesky crashpads.");
     logger.Info("Targets are:");
-    if (Config.Targets != null)
+    if (Config.Targets != null && Config.Targets.Count > 0)
     {
-        foreach (var targetItem in Config.Targets)
+        foreach (var target in Config.Targets)
         {
-            logger.Info(targetItem);
+            logger.Info(target);
         }
 
         var processes = Process.GetProcesses();
-        var executionTarget = processes.Where(process => Config.Targets.Contains(process.ProcessName)).ToList();
+        var executionTargets = processes.Where(p => Config.Targets.Contains(p.ProcessName)).ToList();
 
-        foreach (var item in executionTarget)
+        foreach (var proc in executionTargets)
         {
-            logger.Debug($"Attempting to kill {item.Id}");
-            item.Kill(false);
+            try
+            {
+                logger.Debug($"Attempting to kill {proc.ProcessName} (PID: {proc.Id})");
+                proc.Kill(false);
+            }
+            catch (Exception ex)
+            {
+                logger.Warn($"Failed to kill {proc.ProcessName} (PID: {proc.Id}): {ex.Message}");
+            }
         }
+    }
+    else
+    {
+        logger.Warn("No targets specified in configuration.");
     }
 
     logger.Info("Process complete.");
@@ -88,7 +100,8 @@ internal static class Config
 
 public class InvalidProcessConfigurationFileException : Exception
 {
-    public InvalidProcessConfigurationFileException()
+    public InvalidProcessConfigurationFileException(string? message = null, Exception? inner = null)
+        : base(message, inner)
     {
     }
 }
