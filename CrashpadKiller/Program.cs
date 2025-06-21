@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Xml.Linq;
 using NLog;
+using System.Runtime.InteropServices;
 
 var intervalOption = new Option<int>(
     name: "--interval",
@@ -14,14 +15,22 @@ var rootCommand = new RootCommand("CrashpadKiller");
 
 var oneshotCommand = new Command("oneshot", "Run in an oneshot mode.");
 var daemonCommand = new Command("daemon", "Run in a daemon mode.");
+var registerCommand = new Command("register", "Register as a Windows service.");
+var unregisterCommand = new Command("unregister", "Unregister the Windows service.");
 
 daemonCommand.AddOption(intervalOption);
 daemonCommand.SetHandler((int interval) => ProcessLoop(interval), intervalOption);
 
 oneshotCommand.SetHandler(Execute);
 
+registerCommand.AddOption(intervalOption);
+registerCommand.SetHandler((int interval) => RegisterService(interval), intervalOption);
+unregisterCommand.SetHandler(UnregisterService);
+
 rootCommand.Add(oneshotCommand);
 rootCommand.Add(daemonCommand);
+rootCommand.Add(registerCommand);
+rootCommand.Add(unregisterCommand);
 
 Config.Targets = LoadTargetsFromConfig();
 
@@ -91,6 +100,48 @@ void Execute()
 
     logger.Info("Process complete.");
     LogManager.Shutdown();
+}
+
+void RegisterService(int interval)
+{
+    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
+        Console.WriteLine("Service registration is only supported on Windows.");
+        return;
+    }
+    if (interval <= 0)
+    {
+        Console.WriteLine("Interval must be greater than 0.");
+        return;
+    }
+    var exePath = Process.GetCurrentProcess().MainModule?.FileName;
+    if (string.IsNullOrEmpty(exePath))
+    {
+        Console.WriteLine("Failed to get executable path.");
+        return;
+    }
+    var serviceName = "CrashpadKiller";
+    var displayName = "CrashpadKiller Service";
+    var args = $"create {serviceName} binPath= \"{exePath} daemon --interval {interval}\" DisplayName= \"{displayName}\" start= auto";
+    var psi = new ProcessStartInfo("sc.exe", args) { RedirectStandardOutput = true, UseShellExecute = false };
+    var proc = Process.Start(psi);
+    proc?.WaitForExit();
+    Console.WriteLine(proc?.StandardOutput.ReadToEnd());
+}
+
+void UnregisterService()
+{
+    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
+        Console.WriteLine("Service unregistration is only supported on Windows.");
+        return;
+    }
+    var serviceName = "CrashpadKiller";
+    var args = $"delete {serviceName}";
+    var psi = new ProcessStartInfo("sc.exe", args) { RedirectStandardOutput = true, UseShellExecute = false };
+    var proc = Process.Start(psi);
+    proc?.WaitForExit();
+    Console.WriteLine(proc?.StandardOutput.ReadToEnd());
 }
 
 internal static class Config
