@@ -27,6 +27,7 @@ Config.Targets = LoadTargetsFromConfig();
 
 return await rootCommand.InvokeAsync(args);
 
+
 void ProcessLoop(int intervalSeconds)
 {
     if (intervalSeconds <= 0) return;
@@ -93,11 +94,20 @@ void Execute()
     LogManager.Shutdown();
 }
 
+/// <summary>
+/// Static configuration class for holding target process names.
+/// </summary>
 internal static class Config
 {
+    /// <summary>
+    /// List of target process names.
+    /// </summary>
     internal static List<string>? Targets { get; set; }
 }
 
+/// <summary>
+/// Exception thrown when the process configuration file is invalid or cannot be loaded.
+/// </summary>
 public class InvalidProcessConfigurationFileException : Exception
 {
     public InvalidProcessConfigurationFileException(string? message = null, Exception? inner = null)
