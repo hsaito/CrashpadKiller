@@ -120,8 +120,8 @@ void RegisterService(int interval)
         Console.WriteLine("Failed to get executable path.");
         return;
     }
-    var serviceName = "CrashpadKiller";
-    var displayName = "CrashpadKiller Service";
+    const string serviceName = "CrashpadKiller";
+    const string displayName = "CrashpadKiller Service";
     var args = $"create {serviceName} binPath= \"{exePath} daemon --interval {interval}\" DisplayName= \"{displayName}\" start= auto";
     var psi = new ProcessStartInfo("sc.exe", args) { RedirectStandardOutput = true, UseShellExecute = false };
     var proc = Process.Start(psi);
@@ -136,7 +136,7 @@ void UnregisterService()
         Console.WriteLine("Service unregistration is only supported on Windows.");
         return;
     }
-    var serviceName = "CrashpadKiller";
+    const string serviceName = "CrashpadKiller";
     var args = $"delete {serviceName}";
     var psi = new ProcessStartInfo("sc.exe", args) { RedirectStandardOutput = true, UseShellExecute = false };
     var proc = Process.Start(psi);
