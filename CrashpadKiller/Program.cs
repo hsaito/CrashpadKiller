@@ -19,12 +19,12 @@ var registerCommand = new Command("register", "Register as a Windows service.");
 var unregisterCommand = new Command("unregister", "Unregister the Windows service.");
 
 daemonCommand.AddOption(intervalOption);
-daemonCommand.SetHandler((int interval) => ProcessLoop(interval), intervalOption);
+daemonCommand.SetHandler(ProcessLoop, intervalOption);
 
 oneshotCommand.SetHandler(Execute);
 
 registerCommand.AddOption(intervalOption);
-registerCommand.SetHandler((int interval) => RegisterService(interval), intervalOption);
+registerCommand.SetHandler(RegisterService, intervalOption);
 unregisterCommand.SetHandler(UnregisterService);
 
 rootCommand.Add(oneshotCommand);
