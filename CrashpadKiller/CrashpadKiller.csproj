@@ -9,11 +9,14 @@
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <AssemblyVersion>1.0.4.0</AssemblyVersion>
-        <FileVersion>1.0.4.0</FileVersion>
-        <Version>1.0.4.0</Version>
+        <PublishTrimmed>true</PublishTrimmed>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <AssemblyVersion>$(CrashpadKillerVersion)</AssemblyVersion>
+        <FileVersion>$(CrashpadKillerVersion)</FileVersion>
+        <Version>$(CrashpadKillerVersion)</Version>
+        <ApplicationVersion>$(CrashpadKillerVersion)</ApplicationVersion>
         <AssemblyTitle>CrashpadKiller</AssemblyTitle>
-        <ApplicationVersion>1.0.4.0</ApplicationVersion>
         <ProductName>CrashpadKiller</ProductName>
         <PublisherName>Hideki Saito</PublisherName>
         <Authors>Hideki Saito</Authors>
