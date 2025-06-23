@@ -12,11 +12,11 @@
         <PublishTrimmed>true</PublishTrimmed>
         <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-        <AssemblyVersion>1.0.4.1</AssemblyVersion>
-        <FileVersion>1.0.4.1</FileVersion>
-        <Version>1.0.4.1</Version>
+        <AssemblyVersion>$(CrashpadKillerVersion)</AssemblyVersion>
+        <FileVersion>$(CrashpadKillerVersion)</FileVersion>
+        <Version>$(CrashpadKillerVersion)</Version>
+        <ApplicationVersion>$(CrashpadKillerVersion)</ApplicationVersion>
         <AssemblyTitle>CrashpadKiller</AssemblyTitle>
-        <ApplicationVersion>1.0.4.1</ApplicationVersion>
         <ProductName>CrashpadKiller</ProductName>
         <PublisherName>Hideki Saito</PublisherName>
         <Authors>Hideki Saito</Authors>

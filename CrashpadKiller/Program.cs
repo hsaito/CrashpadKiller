@@ -102,7 +102,7 @@ internal static class Config
     /// <summary>
     /// List of target process names.
     /// </summary>
-    internal static List<string>? Targets { get; set; }
+    internal static List<string> Targets { get; set; } = [];
 }
 
 /// <summary>
