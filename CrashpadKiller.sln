@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrashpadKiller", "CrashpadKiller\CrashpadKiller.csproj", "{53C5AAA2-713E-4ABC-90D8-361DBD0F7FC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrashpadKiller.Tests", "CrashpadKiller.Tests\CrashpadKiller.Tests.csproj", "{8797AF92-A952-4E6E-9C47-3130A17B1BDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{53C5AAA2-713E-4ABC-90D8-361DBD0F7FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53C5AAA2-713E-4ABC-90D8-361DBD0F7FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53C5AAA2-713E-4ABC-90D8-361DBD0F7FC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8797AF92-A952-4E6E-9C47-3130A17B1BDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8797AF92-A952-4E6E-9C47-3130A17B1BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8797AF92-A952-4E6E-9C47-3130A17B1BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8797AF92-A952-4E6E-9C47-3130A17B1BDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

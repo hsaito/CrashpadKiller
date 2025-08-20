@@ -14,6 +14,11 @@ CrashpadKiller is a utility for automatically terminating specified processes (s
 - Windows (official binaries)
 - Other platforms may be supported if you build from source and adapt as needed
 
+## Installation
+1. Download or build CrashpadKiller for .NET 9.
+2. Place `CrashpadKiller.exe`, `process.xml`, and `nlog.config` in the same directory.
+3. Ensure .NET 9 runtime is installed on your system.
+
 ## Usage
 
 ### 1. Configuration
@@ -44,20 +49,20 @@ CrashpadKiller is a utility for automatically terminating specified processes (s
 
 > **Note:**
 > - Make sure `process.xml` and `nlog.config` are in the same directory as `CrashpadKiller.exe`.
-> - The service will log to the file specified in `nlog.config`.
-> - If the service fails to start, check the log file for errors (e.g., missing config files, permission issues).
 
 ## Improvements in This Version
-- Uses .NET Worker Service pattern for robust Windows service support
 - Always loads config/log files from the executable directory
 - Improved error logging and diagnostics
 - Handles fatal errors gracefully and logs them
 - **Requires .NET 9**
 
-## Troubleshooting
-- If the service fails to start (Error 1053), check the log file for details
-- Ensure all config files are present in the executable directory
-- Run as administrator if required
+## Testing
+To run unit tests:
+
+```sh
+cd CrashpadKiller.Tests
+ dotnet test
+```
 
 ## License
 See [LICENSE](LICENSE)

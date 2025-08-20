@@ -1,32 +1,25 @@
-﻿using System.CommandLine;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Xml.Linq;
 using NLog;
 
-var intervalOption = new Option<int>(
-    name: "--interval",
-    description: "Execution interval in seconds.")
+// Manual argument parsing
+if (args.Length > 0 && args[0] == "oneshot")
 {
-    IsRequired = true
-};
-
-var rootCommand = new RootCommand("CrashpadKiller");
-
-var oneshotCommand = new Command("oneshot", "Run in an oneshot mode.");
-var daemonCommand = new Command("daemon", "Run in a daemon mode.");
-
-daemonCommand.AddOption(intervalOption);
-daemonCommand.SetHandler((int interval) => ProcessLoop(interval), intervalOption);
-
-oneshotCommand.SetHandler(Execute);
-
-rootCommand.Add(oneshotCommand);
-rootCommand.Add(daemonCommand);
+    Execute();
+}
+else if (args.Length > 0 && args[0] == "daemon")
+{
+    int interval = 60; // default interval
+    if (args.Length > 1 && int.TryParse(args[1], out var parsed))
+        interval = parsed;
+    ProcessLoop(interval);
+}
+else
+{
+    Console.WriteLine("Usage: CrashpadKiller oneshot | daemon [interval]");
+}
 
 Config.Targets = LoadTargetsFromConfig();
-
-return await rootCommand.InvokeAsync(args);
-
 
 void ProcessLoop(int intervalSeconds)
 {
@@ -94,24 +87,7 @@ void Execute()
     LogManager.Shutdown();
 }
 
-/// <summary>
-/// Static configuration class for holding target process names.
-/// </summary>
 internal static class Config
 {
-    /// <summary>
-    /// List of target process names.
-    /// </summary>
     internal static List<string> Targets { get; set; } = [];
-}
-
-/// <summary>
-/// Exception thrown when the process configuration file is invalid or cannot be loaded.
-/// </summary>
-public class InvalidProcessConfigurationFileException : Exception
-{
-    public InvalidProcessConfigurationFileException(string? message = null, Exception? inner = null)
-        : base(message, inner)
-    {
-    }
 }
