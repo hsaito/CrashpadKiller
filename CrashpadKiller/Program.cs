@@ -58,7 +58,7 @@ class Program
         Console.WriteLine();
         Console.WriteLine("Usage:");
         Console.WriteLine("  CrashpadKiller oneshot                    - Run once and exit");
-        Console.WriteLine("  CrashpadKiller daemon [interval]          - Run continuously (default: 60 seconds)");
+        Console.WriteLine("  CrashpadKiller daemon [interval]          - Run continuously (default: 600 seconds)");
         Console.WriteLine("  CrashpadKiller service [interval]         - Run as Windows service");
         Console.WriteLine("  CrashpadKiller install                    - Install as Windows service (requires admin)");
         Console.WriteLine("  CrashpadKiller uninstall                  - Uninstall Windows service (requires admin)");
