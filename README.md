@@ -1,10 +1,11 @@
 ﻿# CrashpadKiller
 
-CrashpadKiller is a utility for automatically terminating specified processes (such as crashpad handlers) on Windows. It can be run as a command-line tool or in daemon mode.
+CrashpadKiller is a utility for automatically terminating specified processes (such as crashpad handlers) on Windows. It can be run as a command-line tool, in daemon mode, or as a Windows service.
 
 ## Features
 - Kill specified processes listed in `process.xml`
-- Run as a one-shot command or in daemon mode
+- Run as a one-shot command, in daemon mode, or as a Windows service
+- Windows service installation and uninstallation support
 - Configurable execution interval
 - Logging via NLog (see `nlog.config`)
 - Modern .NET implementation (requires .NET 9)
@@ -43,17 +44,42 @@ CrashpadKiller is a utility for automatically terminating specified processes (s
   ```
 - **Daemon mode:**
   ```sh
-  CrashpadKiller.exe daemon --interval 60
+  CrashpadKiller.exe daemon [interval]
   ```
-  (Runs every 60 seconds)
+  (Runs continuously every [interval] seconds, default: 60)
+
+### 3. Windows Service
+
+- **Install as Windows service:**
+  ```sh
+  CrashpadKiller.exe install
+  ```
+  (Requires Administrator privileges)
+
+- **Uninstall Windows service:**
+  ```sh
+  CrashpadKiller.exe uninstall
+  ```
+  (Requires Administrator privileges)
+
+- **Run as Windows service:**
+  ```sh
+  CrashpadKiller.exe service [interval]
+  ```
+  (This command is used internally by the Windows Service Manager)
+
+The Windows service will run automatically at system startup and process targets every 60 seconds (or the specified interval).
 
 > **Note:**
 > - Make sure `process.xml` and `nlog.config` are in the same directory as `CrashpadKiller.exe`.
+> - Service installation/uninstallation requires Administrator privileges.
+> - The service logs to both the console and Windows Event Log.
 
 ## Improvements in This Version
 - Always loads config/log files from the executable directory
 - Improved error logging and diagnostics
 - Handles fatal errors gracefully and logs them
+- **Added Windows service support with installation/uninstallation**
 - **Requires .NET 9**
 
 ## Testing
