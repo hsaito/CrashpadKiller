@@ -1,4 +1,5 @@
 ﻿<config>
+    <interval>600</interval>
     <processes>
         <process>crashpad_handler</process>
     </processes>
