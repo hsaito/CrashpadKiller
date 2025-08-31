@@ -23,6 +23,9 @@ public class CrashpadKillerService : BackgroundService
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        EnsureEventLogSource();
+        string workingDir = Environment.CurrentDirectory;
+        _logger.LogInformation($"CrashpadKiller service starting. Working directory: {workingDir}");
         try
         {
             _targets = LoadTargetsFromConfig();
@@ -35,6 +38,7 @@ public class CrashpadKillerService : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load configuration. Service will not start.");
+            LogToWindowsEvent("CrashpadKiller failed to start: " + ex.Message, EventLogEntryType.Error);
             throw;
         }
 
@@ -72,25 +76,70 @@ public class CrashpadKillerService : BackgroundService
 
     private List<string> LoadTargetsFromConfig()
     {
+        string configPath = Environment.GetEnvironmentVariable("CRASHPADKILLER_CONFIG_PATH") ?? "process.xml";
+        string attemptedPath = configPath;
+        if (!File.Exists(configPath))
+        {
+            // Try next to the executable
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            string exeConfigPath = Path.Combine(exeDir, configPath);
+            if (File.Exists(exeConfigPath))
+            {
+                configPath = exeConfigPath;
+            }
+        }
         try
         {
-            var xml = _fileProvider.ReadAllText("process.xml");
+            if (!File.Exists(configPath))
+            {
+                string msg = $"Process configuration file not found. Attempted paths: {attemptedPath}, {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, attemptedPath)}. Working directory: {Environment.CurrentDirectory}";
+                _logger.LogError(msg);
+                LogToWindowsEvent(msg, EventLogEntryType.Error);
+                throw new InvalidProcessConfigurationFileException(msg);
+            }
+            var xml = _fileProvider.ReadAllText(configPath);
             var config = XDocument.Parse(xml);
             var processTree = config.Element("config")?.Element("processes");
             var targetProcesses = processTree?.Elements("process");
             if (targetProcesses != null)
                 return targetProcesses.Select(target => target.Value).ToList();
-            throw new InvalidProcessConfigurationFileException("No process targets found in configuration.");
+            string msg2 = $"No process targets found in configuration. Path: {configPath}, XML: {xml}";
+            _logger.LogError(msg2);
+            LogToWindowsEvent(msg2, EventLogEntryType.Error);
+            throw new InvalidProcessConfigurationFileException(msg2);
         }
         catch (Exception ex)
         {
-            throw new InvalidProcessConfigurationFileException("Failed to load process configuration.", ex);
+            string detailedMsg = $"Failed to load process configuration from {configPath}. Exception: {ex.Message}\nStackTrace: {ex.StackTrace}\nInnerException: {ex.InnerException?.Message}";
+            _logger.LogError(ex, detailedMsg);
+            LogToWindowsEvent(detailedMsg, EventLogEntryType.Error);
+            throw new InvalidProcessConfigurationFileException(detailedMsg, ex);
         }
     }
 
     private void Execute()
     {
         _processKiller.KillProcesses(_targets);
+    }
+
+    private void EnsureEventLogSource()
+    {
+        const string source = "CrashpadKiller";
+        const string logName = "Application";
+        if (!EventLog.SourceExists(source))
+        {
+            EventLog.CreateEventSource(source, logName);
+        }
+    }
+
+    private void LogToWindowsEvent(string message, EventLogEntryType type)
+    {
+        const string source = "CrashpadKiller";
+        using (var eventLog = new EventLog("Application"))
+        {
+            eventLog.Source = source;
+            eventLog.WriteEntry(message, type);
+        }
     }
 }
 
