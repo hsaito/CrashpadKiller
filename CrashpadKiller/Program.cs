@@ -88,9 +88,11 @@ class Program
     {
         try
         {
-            int interval = 60; // default interval
+            int interval;
             if (args.Length > 1 && int.TryParse(args[1], out var parsed))
                 interval = parsed;
+            else
+                interval = LoadIntervalFromConfig("process.xml");
 
             if (interval <= 0)
             {
@@ -98,6 +100,7 @@ class Program
                 return 1;
             }
 
+            Console.WriteLine($"Interval set to {interval} seconds.");
             Config.Targets = LoadTargetsFromConfig();
             ProcessLoop(interval);
             return 0;
@@ -114,9 +117,11 @@ class Program
     {
         try
         {
-            int interval = 60; // default interval
+            int interval;
             if (args.Length > 1 && int.TryParse(args[1], out var parsed))
                 interval = parsed;
+            else
+                interval = LoadIntervalFromConfig("process.xml");
 
             if (interval <= 0)
             {
@@ -124,21 +129,17 @@ class Program
                 return 1;
             }
 
+            Console.WriteLine($"Interval set to {interval} seconds.");
             var builder = Host.CreateDefaultBuilder()
-                .UseWindowsService(options =>
-                {
-                    options.ServiceName = "CrashpadKiller";
-                })
-                .ConfigureServices(services =>
-                {
+                .UseWindowsService(options => { options.ServiceName = "CrashpadKiller"; })
+                .ConfigureServices(services => {
                     services.AddSingleton(provider => new CrashpadKillerService(
-                        provider.GetRequiredService<ILogger<CrashpadKillerService>>(),
-                        interval));
-                    services.AddHostedService<CrashpadKillerService>(provider => 
+                    provider.GetRequiredService<ILogger<CrashpadKillerService>>(),
+                    interval));
+                    services.AddHostedService<CrashpadKillerService>(provider =>
                         provider.GetRequiredService<CrashpadKillerService>());
                 })
-                .ConfigureLogging(logging =>
-                {
+                .ConfigureLogging(logging => {
                     logging.ClearProviders();
                     logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
                 })
@@ -214,7 +215,7 @@ class Program
     {
         if (intervalSeconds <= 0) return;
         Console.WriteLine($"Starting daemon mode with {intervalSeconds} second intervals. Press Ctrl+C to stop.");
-        
+
         while (true)
         {
             Execute();
@@ -276,9 +277,39 @@ class Program
 
         logger.Info("Process complete.");
     }
+
+    private static int LoadIntervalFromConfig(string configPath)
+    {
+        try
+        {
+            if (!File.Exists(configPath))
+            {
+                // Try next to the executable
+                string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+                string exeConfigPath = Path.Combine(exeDir, configPath);
+                if (File.Exists(exeConfigPath))
+                {
+                    configPath = exeConfigPath;
+                }
+            }
+
+            if (!File.Exists(configPath))
+                return 600;// fallback default
+            var xml = File.ReadAllText(configPath);
+            var config = XDocument.Parse(xml);
+            var intervalElement = config.Element("config")?.Element("interval");
+            if (intervalElement != null && int.TryParse(intervalElement.Value, out var interval) && interval > 0)
+                return interval;
+            return 600;// fallback default
+        }
+        catch
+        {
+            return 600;// fallback default
+        }
+    }
 }
 
 internal static class Config
 {
-    internal static List<string> Targets { get; set; } = [];
+    internal static List<string> Targets { get; set; } = new List<string>();
 }
