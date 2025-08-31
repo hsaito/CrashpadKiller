@@ -311,17 +311,17 @@ class Program
             }
 
             if (!File.Exists(configPath))
-                return 600;// fallback default
+                return 600; // fallback default
             var xml = File.ReadAllText(configPath);
             var config = XDocument.Parse(xml);
             var intervalElement = config.Element("config")?.Element("interval");
             if (intervalElement != null && int.TryParse(intervalElement.Value, out var interval) && interval > 0)
                 return interval;
-            return 600;// fallback default
+            return 600; // fallback default
         }
         catch
         {
-            return 600;// fallback default
+            return 600; // fallback default
         }
     }
 }
