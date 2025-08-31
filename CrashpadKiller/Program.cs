@@ -34,13 +34,20 @@ class Program
 
         var command = args[0].ToLowerInvariant();
 
+        // Ensure service-related commands are only available on Windows
+        if (!OperatingSystem.IsWindows() && (command == "service" || command == "install" || command == "uninstall"))
+        {
+            Console.WriteLine($"Error: The '{command}' command is only supported on Windows.");
+            return 1;
+        }
+
         return command switch
         {
             "oneshot" => RunOneshot(),
             "daemon" => RunDaemon(args),
-            "service" => OperatingSystem.IsWindows() ? await RunAsService(args) : NonWindowsError("service"),
-            "install" => OperatingSystem.IsWindows() ? InstallService() : NonWindowsError("install"),
-            "uninstall" => OperatingSystem.IsWindows() ? UninstallService() : NonWindowsError("uninstall"),
+            "service" => await RunAsService(args),
+            "install" => InstallService(),
+            "uninstall" => UninstallService(),
             _ => ShowUsage()
         };
     }
@@ -112,9 +119,13 @@ class Program
         }
     }
 
-    [SupportedOSPlatform("windows")]
     static async Task<int> RunAsService(string[] args)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            Console.WriteLine("Error: Service mode is only supported on Windows.");
+            return 1;
+        }
         try
         {
             int interval;
@@ -156,9 +167,13 @@ class Program
         }
     }
 
-    [SupportedOSPlatform("windows")]
     static int InstallService()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            Console.WriteLine("Error: Service installation is only supported on Windows.");
+            return 1;
+        }
         try
         {
             if (ServiceInstaller.IsServiceInstalled())
@@ -166,7 +181,6 @@ class Program
                 Console.WriteLine("Service is already installed. Use 'uninstall' to remove it first.");
                 return 1;
             }
-
             ServiceInstaller.InstallService();
             return 0;
         }
@@ -183,9 +197,13 @@ class Program
         }
     }
 
-    [SupportedOSPlatform("windows")]
     static int UninstallService()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            Console.WriteLine("Error: Service uninstallation is only supported on Windows.");
+            return 1;
+        }
         try
         {
             if (!ServiceInstaller.IsServiceInstalled())
@@ -193,7 +211,6 @@ class Program
                 Console.WriteLine("Service is not installed.");
                 return 1;
             }
-
             ServiceInstaller.UninstallService();
             return 0;
         }
