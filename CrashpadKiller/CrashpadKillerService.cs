@@ -11,7 +11,7 @@ public class CrashpadKillerService : BackgroundService
     private readonly int _intervalSeconds;
     private readonly ProcessKiller _processKiller;
     private readonly IFileProvider _fileProvider;
-    private List<string> _targets = [];
+    private List<string> _targets = new List<string>();
 
     public CrashpadKillerService(ILogger<CrashpadKillerService> logger, int intervalSeconds = 60)
     {
