@@ -6,7 +6,7 @@ Thank you for helping keep CrashpadKiller secure. This project follows a "best-e
 
 Please do NOT open a public issue or PR to report a security vulnerability. Instead, report it privately using GitHub's security reporting flow for this repository:
 
-- Report privately via GitHub: https://github.com/hsaito/CrashpadKiller/security/report
+- Report privately via GitHub: https://github.com/hsaito/CrashpadKiller/security/advisories/new
 
 If you are unable to reach us using the repository security form, use GitHub's general vulnerability reporting guidance: https://docs.github.com/en/code-security/reporting-a-vulnerability-to-github or the GitHub report form: https://github.com/contact/report-a-vulnerability
 
