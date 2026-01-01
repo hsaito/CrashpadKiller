@@ -27,11 +27,11 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Restore
-        run: dotnet restore CrashpadKiller/CrashpadKiller.sln
+        run: dotnet restore CrashpadKiller.sln
 
       - name: Publish self-contained single file (win-x64)
         run: |
-          dotnet publish CrashpadKiller/CrashpadKiller/CrashpadKiller.csproj `
+          dotnet publish CrashpadKiller/CrashpadKiller.csproj `
             --configuration Release `
             --runtime win-x64 `
             -p:PublishSingleFile=true `
@@ -44,7 +44,7 @@ jobs:
       - name: Zip artifact
         shell: pwsh
         run: |
-          $outDir = "CrashpadKiller/CrashpadKiller/bin/Release/net10.0/win-x64/publish"
+          $outDir = "CrashpadKiller/bin/Release/net10.0/win-x64/publish"
           $zipPath = "CrashpadKiller-win-x64-$env:VERSION.zip"
           New-Item -ItemType Directory -Force -Path (Split-Path $zipPath) | Out-Null
           Compress-Archive -Path "$outDir/*" -DestinationPath $zipPath -Force
