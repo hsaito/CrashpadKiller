@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Xml.Linq;
+using OpenTelemetry.Trace;
 
 namespace CrashpadKiller;
 
@@ -40,6 +41,11 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
 {
     public List<string> LoadTargetsFromConfig(string configPath)
     {
+        var stopwatch = Stopwatch.StartNew();
+        Telemetry.RecordConfigLoadAttempt();
+        using var activity = Telemetry.StartActivity("load process configuration");
+        activity?.SetTag("crashpadkiller.config.path", configPath);
+
         try
         {
             var xml = fileProvider.ReadAllText(configPath);
@@ -47,17 +53,30 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
             var processTree = config.Element("config")?.Element("processes");
             var targetProcesses = processTree?.Elements("process");
             if (targetProcesses != null)
-                return [.. targetProcesses.Select(target => target.Value)];
+            {
+                var targets = targetProcesses.Select(target => target.Value).ToList();
+                activity?.SetTag("crashpadkiller.process.count", targets.Count);
+                Telemetry.RecordConfigLoadSuccess(stopwatch.Elapsed);
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                return targets;
+            }
             throw new InvalidProcessConfigurationFileException("No process targets found in configuration.");
         }
         catch (Exception ex)
         {
+            Telemetry.RecordConfigLoadFailure(stopwatch.Elapsed);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             throw new InvalidProcessConfigurationFileException("Failed to load process configuration.", ex);
         }
     }
 
     public void KillProcesses(List<string> targets)
     {
+        var stopwatch = Stopwatch.StartNew();
+        using var activity = Telemetry.StartActivity("kill processes");
+        activity?.SetTag("crashpadkiller.target.count", targets?.Count ?? 0);
+
         logger.Info("Killing those pesky crashpads.");
         logger.Info("Targets are:");
         if (targets is { Count: > 0 })
@@ -68,8 +87,10 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
             }
             var processes = processProvider.GetProcesses();
             var executionTargets = processes.Where(p => targets.Contains(p.ProcessName)).ToList();
+            activity?.SetTag("crashpadkiller.match.count", executionTargets.Count);
             foreach (var proc in executionTargets)
             {
+                Telemetry.RecordProcessKillAttempt();
                 try
                 {
                     logger.Debug($"Attempting to kill {proc.ProcessName} (PID: {proc.Id})");
@@ -77,7 +98,9 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
                 }
                 catch (Exception ex)
                 {
+                    Telemetry.RecordProcessKillFailure();
                     logger.Warn($"Failed to kill {proc.ProcessName} (PID: {proc.Id}): {ex.Message}");
+                    activity?.AddException(ex);
                 }
             }
         }
@@ -85,6 +108,8 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
         {
             logger.Warn("No targets specified in configuration.");
         }
+        Telemetry.RecordProcessKillDuration(stopwatch.Elapsed);
+        activity?.SetStatus(ActivityStatusCode.Ok);
         logger.Info("Process complete.");
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Xml.Linq;
+using OpenTelemetry.Trace;
 
 namespace CrashpadKiller;
 
@@ -50,9 +51,12 @@ public class CrashpadKillerService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            var stopwatch = Stopwatch.StartNew();
+            using var activity = Telemetry.StartActivity("service iteration");
             try
             {
                 Execute();
+                activity?.SetStatus(ActivityStatusCode.Ok);
                 await Task.Delay(TimeSpan.FromSeconds(_intervalSeconds), stoppingToken);
             }
             catch (OperationCanceledException)
@@ -63,8 +67,14 @@ public class CrashpadKillerService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during process execution");
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity?.AddException(ex);
                 // Continue running even if one iteration fails
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+            finally
+            {
+                Telemetry.RecordServiceIterationDuration(stopwatch.Elapsed);
             }
         }
     }

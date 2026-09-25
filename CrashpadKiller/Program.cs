@@ -13,6 +13,7 @@ class Program
 {
     static async Task<int> Main(string[] args)
     {
+        using var telemetry = Telemetry.InitializeIfEnabled();
         try
         {
             return await ProcessArguments(args);
