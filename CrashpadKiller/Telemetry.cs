@@ -17,8 +17,10 @@ internal static class Telemetry
     private static readonly Counter<long> ConfigLoadAttempts = Meter.CreateCounter<long>("crashpadkiller.config.load.attempts");
     private static readonly Counter<long> ConfigLoadFailures = Meter.CreateCounter<long>("crashpadkiller.config.load.failures");
     private static readonly Histogram<double> ConfigLoadDuration = Meter.CreateHistogram<double>("crashpadkiller.config.load.duration", unit: "s");
+    private static readonly Counter<long> ProcessKillInitiated = Meter.CreateCounter<long>("crashpadkiller.process.kill.initiated");
     private static readonly Counter<long> ProcessKillAttempts = Meter.CreateCounter<long>("crashpadkiller.process.kill.attempts");
     private static readonly Counter<long> ProcessKillFailures = Meter.CreateCounter<long>("crashpadkiller.process.kill.failures");
+    private static readonly Counter<long> ProcessKillSucceeded = Meter.CreateCounter<long>("crashpadkiller.process.kill.succeeded");
     private static readonly Histogram<double> ProcessKillDuration = Meter.CreateHistogram<double>("crashpadkiller.process.kill.duration", unit: "s");
     private static readonly Histogram<double> ServiceIterationDuration = Meter.CreateHistogram<double>("crashpadkiller.service.iteration.duration", unit: "s");
 
@@ -61,9 +63,13 @@ internal static class Telemetry
     internal static void RecordConfigLoadSuccess(TimeSpan duration)
         => ConfigLoadDuration.Record(duration.TotalSeconds);
 
+    internal static void RecordProcessKillInitiated(int count = 1) => ProcessKillInitiated.Add(count);
+
     internal static void RecordProcessKillAttempt() => ProcessKillAttempts.Add(1);
 
     internal static void RecordProcessKillFailure() => ProcessKillFailures.Add(1);
+
+    internal static void RecordProcessKillSucceeded(int count = 1) => ProcessKillSucceeded.Add(count);
 
     internal static void RecordProcessKillDuration(TimeSpan duration)
         => ProcessKillDuration.Record(duration.TotalSeconds);

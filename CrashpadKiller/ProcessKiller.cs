@@ -81,6 +81,7 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
         logger.Info("Targets are:");
         if (targets is { Count: > 0 })
         {
+            Telemetry.RecordProcessKillInitiated();
             foreach (var target in targets)
             {
                 logger.Info(target);
@@ -88,6 +89,7 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
             var processes = processProvider.GetProcesses();
             var executionTargets = processes.Where(p => targets.Contains(p.ProcessName)).ToList();
             activity?.SetTag("crashpadkiller.match.count", executionTargets.Count);
+            var killedCount = 0;
             foreach (var proc in executionTargets)
             {
                 Telemetry.RecordProcessKillAttempt();
@@ -95,6 +97,7 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
                 {
                     logger.Debug($"Attempting to kill {proc.ProcessName} (PID: {proc.Id})");
                     proc.Kill(false);
+                    killedCount++;
                 }
                 catch (Exception ex)
                 {
@@ -103,6 +106,7 @@ public class ProcessKiller(IProcessProvider processProvider, IFileProvider fileP
                     activity?.AddException(ex);
                 }
             }
+            Telemetry.RecordProcessKillSucceeded(killedCount);
         }
         else
         {
