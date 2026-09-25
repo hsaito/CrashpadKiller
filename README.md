@@ -9,6 +9,7 @@ CrashpadKiller is a utility for automatically terminating specified processes (s
 - Configurable execution interval (default: **600 seconds**; can be set in `process.xml` or via command line)
 - Logging via NLog (see `nlog.config`)
 - Logs to Windows Event Log (Windows only)
+- OpenTelemetry traces and metrics when enabled
 - Robust error handling and diagnostics
 - Modern .NET implementation (requires .NET 9)
 - **Safe cross-platform behavior:** service and EventLog features are only available on Windows; on other platforms, these commands emit errors and exit safely
@@ -17,6 +18,7 @@ CrashpadKiller is a utility for automatically terminating specified processes (s
 - **.NET 9 (required for official builds)**
 - Windows (official binaries)
 - Other platforms may be supported if you build from source; service and EventLog features are disabled outside Windows
+- Optional: an OTLP collector or compatible endpoint if you want to export telemetry
 
 ## Installation
 1. Download or build CrashpadKiller for .NET 9.
@@ -39,6 +41,7 @@ CrashpadKiller is a utility for automatically terminating specified processes (s
 ```
 
 - Place `nlog.config` in the same directory for logging configuration.
+- To enable OpenTelemetry, set `CRASHPADKILLER_OTEL_ENABLED=1` and configure standard `OTEL_*` variables such as `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
 ### 2. Command Line
 
@@ -78,6 +81,7 @@ The Windows service will run automatically at system startup and process targets
 > - Make sure `process.xml` and `nlog.config` are in the same directory as `CrashpadKiller.exe`.
 > - Service installation/uninstallation requires Administrator privileges.
 > - The service logs to both the console and Windows Event Log (Windows only).
+> - When enabled, telemetry exports traces and metrics for config loads, process kill attempts, and service iterations.
 > - On non-Windows platforms, service and EventLog features are disabled and will emit errors if used.
 
 ## Improvements in This Version
